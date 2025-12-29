@@ -29,11 +29,15 @@ import {
   ArrowDownRight,
   Sparkles,
   CheckCircle2,
-  Clock
+  Clock,
+  ArrowRight,
+  ChevronRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const [demandData, setDemandData] = useState<any[]>([]);
@@ -44,27 +48,23 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch Sales History for demand chart
         const { data: sales } = await supabase
           .from('sales_history')
           .select('date, quantity_sold')
           .order('date', { ascending: true })
           .limit(7);
 
-        // Fetch Forecasts for demand chart
         const { data: forecasts } = await supabase
           .from('demand_forecasts')
           .select('forecast_date, predicted_quantity')
           .order('forecast_date', { ascending: true })
           .limit(7);
 
-        // Fetch Inventory Health
         const { data: inv } = await supabase
           .from('inventory')
           .select('quantity_on_hand, reorder_point, products(name)')
           .limit(5);
 
-        // Fetch AI Insights
         const { data: aiIns } = await supabase
           .from('ai_insights')
           .select('*')
@@ -111,107 +111,94 @@ export default function DashboardPage() {
   if (loading) {
     return <div className="flex items-center justify-center h-[calc(100vh-200px)]">
       <div className="animate-pulse flex flex-col items-center gap-4">
-        <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center">
-          <Sparkles className="h-6 w-6 text-indigo-600 animate-spin" />
+        <div className="h-16 w-16 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center">
+          <Sparkles className="h-8 w-8 text-indigo-600 animate-spin" />
         </div>
-        <p className="text-slate-500 font-medium">Loading Intelligent Dashboard...</p>
+        <p className="text-slate-500 font-bold text-lg">Synthesizing Real-time Data...</p>
       </div>
     </div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Supply Chain Dashboard</h1>
-        <p className="text-slate-500">Real-time intelligence and demand forecasting for your global operations.</p>
+        <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Supply Chain Intelligence</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">Predictive oversight for global operations.</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Total Demand</CardTitle>
-            <TrendingUp className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12,482</div>
-            <p className="text-xs text-emerald-500 flex items-center mt-1">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              +12.5% from last week
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Stock Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-red-500 flex items-center mt-1">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              2 high risk items
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Supplier Score</CardTitle>
-            <Users className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">94.8%</div>
-            <p className="text-xs text-emerald-500 flex items-center mt-1">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              +1.2% this month
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
-            <Truck className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">92.4%</div>
-            <p className="text-xs text-slate-500 flex items-center mt-1">
-              <Clock className="h-3 w-3 mr-1" />
-              Avg. 3.2 days delay
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <KPICard 
+          title="Total Demand" 
+          value="12,482" 
+          trend="+12.5%" 
+          trendType="up" 
+          icon={<TrendingUp className="h-5 w-5 text-indigo-600" />} 
+          description="Total units sold across all channels"
+        />
+        <KPICard 
+          title="Stock Health" 
+          value="92%" 
+          trend="3 Alerts" 
+          trendType="down" 
+          icon={<AlertTriangle className="h-5 w-5 text-amber-500" />} 
+          description="Percentage of items above reorder point"
+        />
+        <KPICard 
+          title="Supplier Reliability" 
+          value="94.8%" 
+          trend="+1.2%" 
+          trendType="up" 
+          icon={<Users className="h-5 w-5 text-blue-600" />} 
+          description="On-time delivery performance"
+        />
+        <KPICard 
+          title="Fulfillment" 
+          value="98.2%" 
+          trend="0.5d avg" 
+          trendType="neutral" 
+          icon={<Truck className="h-5 w-5 text-emerald-600" />} 
+          description="Order processing efficiency"
+        />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-7">
+      <div className="grid gap-6 lg:grid-cols-7">
         {/* Demand Forecast Chart */}
-        <Card className="col-span-4 shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader>
-            <CardTitle>Demand Trends & Forecasting</CardTitle>
-            <CardDescription>Comparison between actual sales and AI-predicted demand.</CardDescription>
+        <Card className="lg:col-span-4 shadow-2xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2.5rem] overflow-hidden bg-white dark:bg-slate-900 transition-all hover:shadow-indigo-100 dark:hover:border-indigo-900/50 group">
+          <CardHeader className="px-8 pt-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-black">Demand Trends & Forecasting</CardTitle>
+                <CardDescription className="font-medium">AI-predicted vs. actual sales metrics.</CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-600">
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px] px-4 pb-8">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={demandData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} dx={-10} />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px' }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="actual" 
                   stroke="#6366f1" 
-                  strokeWidth={3} 
-                  dot={{ r: 4, fill: '#6366f1' }}
-                  activeDot={{ r: 6 }}
+                  strokeWidth={4} 
+                  dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 8, strokeWidth: 0 }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="forecast" 
-                  stroke="#94a3b8" 
+                  stroke="#cbd5e1" 
                   strokeWidth={2} 
-                  strokeDasharray="5 5" 
+                  strokeDasharray="8 5" 
                   dot={false}
                 />
               </LineChart>
@@ -220,64 +207,72 @@ export default function DashboardPage() {
         </Card>
 
         {/* AI Insights Panel */}
-        <Card className="col-span-3 shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>AI Insights</CardTitle>
-              <CardDescription>Generative AI generated recommendations.</CardDescription>
-            </div>
-            <div className="bg-indigo-600 p-1.5 rounded-lg">
-              <Sparkles className="h-4 w-4 text-white" />
+        <Card className="lg:col-span-3 shadow-2xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2.5rem] overflow-hidden bg-white dark:bg-slate-900">
+          <CardHeader className="px-8 pt-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-black">Intelligent Insights</CardTitle>
+                <CardDescription className="font-medium">Real-time optimization suggestions.</CardDescription>
+              </div>
+              <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-100 dark:shadow-none">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-6">
             <div className="space-y-4">
-              {insights.map((insight) => (
-                <div key={insight.id} className="flex gap-4 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-900 transition-colors cursor-pointer">
-                  <div className={`mt-0.5 p-2 rounded-lg ${insight.color}`}>
-                    <insight.icon className="h-4 w-4" />
+              {insights.map((insight, i) => (
+                <motion.div 
+                  key={insight.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex gap-4 p-5 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer group hover:shadow-lg"
+                >
+                  <div className={cn("mt-0.5 p-3 rounded-xl h-fit", insight.color)}>
+                    <insight.icon className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-sm font-semibold">{insight.title}</h4>
-                      <Badge variant={insight.level === 'High' ? 'destructive' : 'secondary'} className="text-[10px] h-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-black dark:text-white">{insight.title}</h4>
+                      <Badge variant={insight.level === 'High' ? 'destructive' : 'secondary'} className="text-[10px] h-5 rounded-full px-2 font-bold">
                         {insight.level}
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                       {insight.description}
                     </p>
                   </div>
-                </div>
+                </motion.div>
               ))}
-              <Button variant="outline" className="w-full text-xs font-medium border-slate-200 dark:border-slate-800">
-                View All Insights
+              <Button variant="ghost" className="w-full h-12 rounded-xl font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                Open AI Command Center <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-6 lg:grid-cols-7">
         {/* Inventory Levels */}
-        <Card className="lg:col-span-3 shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader>
-            <CardTitle>Inventory Health</CardTitle>
-            <CardDescription>Current stock vs. reorder points across key products.</CardDescription>
+        <Card className="lg:col-span-3 shadow-2xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
+          <CardHeader className="px-8 pt-8">
+            <CardTitle className="text-xl font-black">Inventory Health</CardTitle>
+            <CardDescription className="font-medium">Top SKU availability vs reorder points.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[250px]">
+          <CardContent className="h-[300px] px-4 pb-8">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={inventoryData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
+              <BarChart data={inventoryData} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} width={100} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} width={100} />
                 <Tooltip 
-                  cursor={{ fill: 'transparent' }}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
                 />
-                <Bar dataKey="stock" radius={[0, 4, 4, 0]}>
+                <Bar dataKey="stock" radius={[0, 8, 8, 0]} barSize={32}>
                   {inventoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.stock < entry.min ? '#ef4444' : entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.stock < entry.min ? '#f43f5e' : '#6366f1'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -285,48 +280,81 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Logistics & Delivery Status */}
-        <Card className="lg:col-span-4 shadow-sm border-slate-200 dark:border-slate-800">
-          <CardHeader>
-            <CardTitle>Recent Logistics Activity</CardTitle>
-            <CardDescription>Tracking real-time shipments and delivery status.</CardDescription>
+        {/* Recent Activity / Logistics */}
+        <Card className="lg:col-span-4 shadow-2xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
+          <CardHeader className="px-8 pt-8">
+            <CardTitle className="text-xl font-black">Live Logistics Network</CardTitle>
+            <CardDescription className="font-medium">Global shipment status and transit times.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="px-8">
+            <div className="space-y-5">
               {[
-                { id: 'TRK-9021', status: 'In Transit', origin: 'Shenzhen, CN', destination: 'Chicago, US', time: '2h ago', progress: 65 },
-                { id: 'TRK-8812', status: 'Delivered', origin: 'London, UK', destination: 'Rotterdam, NL', time: '5h ago', progress: 100 },
-                { id: 'TRK-7741', status: 'Delayed', origin: 'Los Angeles, US', destination: 'Tokyo, JP', time: '8h ago', progress: 40 },
+                { id: 'SHP-9021', status: 'In Transit', origin: 'Shenzhen, CN', destination: 'Chicago, US', eta: 'Jan 2', progress: 65, color: 'bg-indigo-600' },
+                { id: 'SHP-8812', status: 'Delivered', origin: 'London, UK', destination: 'Rotterdam, NL', eta: 'Completed', progress: 100, color: 'bg-emerald-500' },
+                { id: 'SHP-7741', status: 'Delayed', origin: 'Los Angeles, US', destination: 'Tokyo, JP', eta: 'Jan 5', progress: 40, color: 'bg-rose-500' },
               ].map((shipment) => (
-                <div key={shipment.id} className="flex flex-col gap-2 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-4 w-4 text-slate-400" />
-                      <span className="text-sm font-semibold">{shipment.id}</span>
+                <div key={shipment.id} className="p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900 transition-all group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
+                        <Truck className="h-5 w-5 text-slate-500 group-hover:text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-black dark:text-white">{shipment.id}</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{shipment.origin} → {shipment.destination}</p>
+                      </div>
                     </div>
-                    <Badge variant={shipment.status === 'Delivered' ? 'outline' : shipment.status === 'Delayed' ? 'destructive' : 'secondary'} className="text-[10px]">
+                    <Badge variant={shipment.status === 'Delivered' ? 'outline' : shipment.status === 'Delayed' ? 'destructive' : 'secondary'} className="rounded-full px-3 py-1 font-bold text-[10px]">
                       {shipment.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>{shipment.origin} → {shipment.destination}</span>
-                    <span>{shipment.time}</span>
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-tight">
+                    <span>PROGRESS</span>
+                    <span>ETA: {shipment.eta}</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-1 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${shipment.status === 'Delayed' ? 'bg-amber-500' : 'bg-indigo-600'}`} 
-                      style={{ width: `${shipment.progress}%` }}
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${shipment.progress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className={cn("h-full rounded-full", shipment.color)}
                     />
                   </div>
                 </div>
               ))}
-              <Button variant="ghost" className="w-full text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400">
-                Manage Logistics
-              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
+  );
+}
+
+function KPICard({ title, value, trend, trendType, icon, description }: any) {
+  return (
+    <Card className="shadow-xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900 transition-all hover:-translate-y-1 hover:shadow-indigo-100 dark:hover:border-indigo-900/50 group">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">
+        <CardTitle className="text-sm font-black text-slate-500 uppercase tracking-widest">{title}</CardTitle>
+        <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+      </CardHeader>
+      <CardContent className="px-8 pb-8">
+        <div className="text-4xl font-black text-slate-900 dark:text-white mb-2">{value}</div>
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "flex items-center px-2 py-1 rounded-full text-[10px] font-black",
+            trendType === 'up' ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : 
+            trendType === 'down' ? "bg-rose-50 text-rose-600 dark:bg-rose-900/20" : 
+            "bg-slate-50 text-slate-600 dark:bg-slate-800"
+          )}>
+            {trendType === 'up' && <ArrowUpRight className="h-3 w-3 mr-0.5" />}
+            {trendType === 'down' && <ArrowDownRight className="h-3 w-3 mr-0.5" />}
+            {trend}
+          </div>
+          <span className="text-[11px] font-medium text-slate-400">{description}</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
