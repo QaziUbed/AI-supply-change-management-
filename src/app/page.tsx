@@ -173,6 +173,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="absolute inset-0 bg-indigo-600/10 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-[2px]">
+                <Link href="/dashboard" className="w-full h-full flex items-center justify-center">
                    <div className="relative">
                       <motion.div 
                         animate={{ y: [0, -10, 0] }}
@@ -182,6 +183,7 @@ export default function LandingPage() {
                          <MousePointer2 className="h-5 w-5" /> Launch Dashboard
                       </motion.div>
                    </div>
+                </Link>
                 </div>
               </div>
             </motion.div>
@@ -205,24 +207,28 @@ export default function LandingPage() {
                 title="AI Copilot"
                 description="Conversational interface that queries your real-time data to solve complex logistics riddles."
                 index={0}
+                href="/ai-assistant"
               />
               <FeatureCard 
                 icon={<BarChart3 className="h-7 w-7 text-indigo-600" />}
                 title="Smart Forecast"
                 description="Deep learning models that adjust to market volatility and seasonal shifts automatically."
                 index={1}
+                href="/forecasting"
               />
               <FeatureCard 
                 icon={<Package className="h-7 w-7 text-indigo-600" />}
                 title="Autonomous Stock"
                 description="Self-healing inventory systems that initiate reorders based on risk, not just levels."
                 index={2}
+                href="/inventory"
               />
               <FeatureCard 
                 icon={<Truck className="h-7 w-7 text-indigo-600" />}
                 title="Digital Twin"
                 description="Real-time map of your global supply chain with simulated 'what-if' scenarios."
                 index={3}
+                href="/logistics"
               />
             </div>
           </div>
@@ -363,24 +369,26 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) {
+function FeatureCard({ icon, title, description, index, href }: { icon: React.ReactNode, title: string, description: string, index: number, href: string }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="p-10 rounded-[2rem] border border-slate-100 bg-white hover:border-indigo-100 hover:shadow-[0_24px_48px_-12px_rgba(79,70,229,0.08)] transition-all group relative overflow-hidden"
-    >
-      <div className="mb-8 bg-slate-50 p-4 rounded-2xl w-fit group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-        {icon}
-      </div>
-      <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">{title}</h3>
-      <p className="text-slate-500 text-lg leading-relaxed font-medium mb-8">{description}</p>
-      <div className="flex items-center text-indigo-600 font-bold text-sm tracking-wide group-hover:translate-x-2 transition-transform">
-        EXPLORE <ChevronRight className="ml-1 h-4 w-4" />
-      </div>
-    </motion.div>
+    <Link href={href} className="block">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        viewport={{ once: true }}
+        className="p-10 h-full rounded-[2rem] border border-slate-100 bg-white hover:border-indigo-100 hover:shadow-[0_24px_48px_-12px_rgba(79,70,229,0.08)] transition-all group relative overflow-hidden"
+      >
+        <div className="mb-8 bg-slate-50 p-4 rounded-2xl w-fit group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+          {icon}
+        </div>
+        <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">{title}</h3>
+        <p className="text-slate-500 text-lg leading-relaxed font-medium mb-8">{description}</p>
+        <div className="flex items-center text-indigo-600 font-bold text-sm tracking-wide group-hover:translate-x-2 transition-transform">
+          EXPLORE <ChevronRight className="ml-1 h-4 w-4" />
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
