@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Plus, 
+import {
+  Search,
+  Filter,
+  Download,
+  Plus,
   MoreVertical,
   ArrowUpDown,
   Warehouse,
@@ -22,13 +22,13 @@ import {
   CheckCircle2,
   ChevronRight
 } from 'lucide-react';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +36,7 @@ export default function InventoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
     async function fetchInventory() {
@@ -56,7 +57,7 @@ export default function InventoryPage() {
 
         if (error) throw error;
         if (data) {
-          setInventory(data.map(item => ({
+          setInventory(data.map((item: any) => ({
             id: item.id,
             name: (item.products as any).name,
             sku: (item.products as any).sku,
@@ -64,8 +65,8 @@ export default function InventoryPage() {
             stock: item.quantity_on_hand,
             warehouse: (item.warehouses as any).name,
             min: item.reorder_point,
-            status: item.quantity_on_hand <= item.reorder_point / 2 ? 'Critical' : 
-                    item.quantity_on_hand <= item.reorder_point ? 'Low Stock' : 'Healthy'
+            status: item.quantity_on_hand <= item.reorder_point / 2 ? 'Critical' :
+              item.quantity_on_hand <= item.reorder_point ? 'Low Stock' : 'Healthy'
           })));
         }
       } catch (err) {
@@ -78,8 +79,8 @@ export default function InventoryPage() {
     fetchInventory();
   }, []);
 
-  const filteredData = inventory.filter(item => 
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredData = inventory.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.sku.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -89,8 +90,8 @@ export default function InventoryPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <div className="h-16 w-16 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center">
-          <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+        <div className="h-16 w-16 bg-teal-100 dark:bg-teal-900/20 rounded-full flex items-center justify-center">
+          <Loader2 className="h-8 w-8 text-teal-600 animate-spin" />
         </div>
         <p className="text-slate-500 font-bold text-lg">Synchronizing inventory data...</p>
       </div>
@@ -103,7 +104,7 @@ export default function InventoryPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Inventory Control</h1>
-            <Badge className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400 border-none font-bold text-[10px] px-2">{inventory.length} SKUs</Badge>
+            <Badge className="bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400 border-none font-bold text-[10px] px-2">{inventory.length} SKUs</Badge>
           </div>
           <p className="text-slate-500 dark:text-slate-400 font-medium text-lg">Real-time stock levels across all distribution centers.</p>
         </div>
@@ -111,7 +112,7 @@ export default function InventoryPage() {
           <Button variant="outline" className="rounded-xl font-bold border-slate-200 dark:border-slate-700">
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-100 dark:shadow-none">
+          <Button className="bg-teal-600 hover:bg-teal-700 rounded-xl font-bold shadow-lg shadow-teal-100 dark:shadow-none">
             <Plus className="mr-2 h-4 w-4" /> Add Item
           </Button>
         </div>
@@ -119,30 +120,30 @@ export default function InventoryPage() {
 
       {/* KPI Row */}
       <div className="grid gap-6 md:grid-cols-4">
-        <MetricCard 
-          title="Total SKUs" 
-          value={inventory.length.toString()} 
-          trend="Active items" 
-          icon={<Package className="h-5 w-5 text-indigo-600" />} 
+        <MetricCard
+          title="Total SKUs"
+          value={inventory.length.toString()}
+          trend="Active items"
+          icon={<Package className="h-5 w-5 text-teal-600" />}
         />
-        <MetricCard 
-          title="Healthy Stock" 
-          value={healthyCount.toString()} 
+        <MetricCard
+          title="Healthy Stock"
+          value={healthyCount.toString()}
           trend={`${Math.round((healthyCount / inventory.length) * 100)}% of total`}
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />} 
+          icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
         />
-        <MetricCard 
-          title="Alerts" 
-          value={alertCount.toString()} 
-          trend="Need attention" 
-          icon={<AlertTriangle className="h-5 w-5 text-amber-500" />} 
+        <MetricCard
+          title="Alerts"
+          value={alertCount.toString()}
+          trend="Need attention"
+          icon={<AlertTriangle className="h-5 w-5 text-amber-500" />}
           alert={alertCount > 0}
         />
-        <MetricCard 
-          title="Warehouses" 
-          value="3" 
-          trend="Global centers" 
-          icon={<Warehouse className="h-5 w-5 text-violet-600" />} 
+        <MetricCard
+          title="Warehouses"
+          value="3"
+          trend="Global centers"
+          icon={<Warehouse className="h-5 w-5 text-cyan-600" />}
         />
       </div>
 
@@ -150,10 +151,10 @@ export default function InventoryPage() {
         <CardHeader className="px-8 pt-8 pb-6 border-b border-slate-100 dark:border-slate-800">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative max-w-md w-full group">
-              <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-              <Input 
-                placeholder="Search SKU or Product Name..." 
-                className="pl-11 h-12 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus-visible:ring-indigo-600 font-medium"
+              <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+              <Input
+                placeholder="Search SKU or Product Name..."
+                className="pl-11 h-12 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus-visible:ring-teal-600 font-medium"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -186,7 +187,7 @@ export default function InventoryPage() {
             </TableHeader>
             <TableBody>
               {filteredData.map((item, i) => (
-                <motion.tr 
+                <motion.tr
                   key={item.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -195,7 +196,7 @@ export default function InventoryPage() {
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex flex-col">
-                      <span className="font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">{item.name}</span>
+                      <span className="font-black text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">{item.name}</span>
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.sku}</span>
                     </div>
                   </TableCell>
@@ -209,14 +210,14 @@ export default function InventoryPage() {
                         <span className="font-bold text-slate-400">Min: {item.min}</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <motion.div 
+                        <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${Math.min((item.stock / (item.min * 2)) * 100, 100)}%` }}
                           transition={{ duration: 0.8, ease: "easeOut" }}
                           className={cn(
                             "h-full rounded-full",
-                            item.stock < item.min / 2 ? 'bg-rose-500' : 
-                            item.stock < item.min ? 'bg-amber-500' : 'bg-emerald-500'
+                            item.stock < item.min / 2 ? 'bg-rose-500' :
+                              item.stock < item.min ? 'bg-amber-500' : 'bg-emerald-500'
                           )}
                         />
                       </div>
@@ -224,7 +225,7 @@ export default function InventoryPage() {
                   </TableCell>
                   <TableCell className="font-bold text-slate-600 dark:text-slate-400">{item.warehouse}</TableCell>
                   <TableCell>
-                    <Badge 
+                    <Badge
                       className={cn(
                         "text-[10px] font-bold rounded-full px-3 py-1",
                         item.status === 'Healthy' && "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 border-none",
@@ -245,7 +246,7 @@ export default function InventoryPage() {
                       <DropdownMenuContent align="end" className="rounded-xl p-2">
                         <DropdownMenuItem className="rounded-lg font-medium cursor-pointer">Edit Product</DropdownMenuItem>
                         <DropdownMenuItem className="rounded-lg font-medium cursor-pointer">Adjust Stock</DropdownMenuItem>
-                        <DropdownMenuItem className="rounded-lg text-indigo-600 font-bold cursor-pointer">Reorder Now</DropdownMenuItem>
+                        <DropdownMenuItem className="rounded-lg text-teal-600 font-bold cursor-pointer">Reorder Now</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -281,7 +282,7 @@ function MetricCard({ title, value, trend, icon, alert }: { title: string, value
         )}>{value}</div>
         <div className={cn(
           "text-xs font-bold",
-          alert ? "text-amber-600" : "text-indigo-600"
+          alert ? "text-amber-600" : "text-teal-600"
         )}>{trend}</div>
       </CardContent>
     </Card>

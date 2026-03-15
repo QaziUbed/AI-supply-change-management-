@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   full_name: string | null;
   role: 'Admin' | 'Planner' | 'Manager';
   email: string | null;
+  isGuest?: boolean;
 }
 
 interface AuthState {

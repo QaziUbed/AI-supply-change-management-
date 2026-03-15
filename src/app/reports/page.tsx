@@ -13,7 +13,7 @@ export default function ReportsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
           <p className="text-slate-500">Generate and export comprehensive supply chain reports.</p>
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700">
+        <Button className="bg-teal-600 hover:bg-teal-700">
           <Download className="mr-2 h-4 w-4" /> Export All Data
         </Button>
       </div>
@@ -32,7 +32,7 @@ export default function ReportsPage() {
         <ReportCard 
           title="Cost Analysis" 
           description="Breakdown of logistics and procurement spend."
-          icon={<PieChart className="h-5 w-5 text-indigo-600" />}
+          icon={<PieChart className="h-5 w-5 text-teal-600" />}
         />
       </div>
 
@@ -70,7 +70,7 @@ export default function ReportsPage() {
 
 function ReportCard({ title, description, icon }: { title: string, description: string, icon: React.ReactNode }) {
   return (
-    <Card className="hover:border-indigo-200 transition-colors cursor-pointer group">
+    <Card className="hover:border-teal-200 transition-colors cursor-pointer group">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 mb-2">
           {icon}
@@ -79,7 +79,7 @@ function ReportCard({ title, description, icon }: { title: string, description: 
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button variant="link" className="p-0 h-auto text-indigo-600 group-hover:translate-x-1 transition-transform">
+        <Button variant="link" className="p-0 h-auto text-teal-600 group-hover:translate-x-1 transition-transform">
           Generate Report →
         </Button>
       </CardContent>

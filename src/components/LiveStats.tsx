@@ -44,7 +44,7 @@ export function LiveStats() {
   const statItems = [
     { label: 'Total Products', value: stats?.productCount, icon: Box, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Global Suppliers', value: stats?.supplierCount, icon: Activity, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-    { label: 'AI Insights Today', value: stats?.insightCount, icon: Brain, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
+    { label: 'AI Insights Today', value: stats?.insightCount, icon: Brain, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20' },
     { label: 'Inventory Health', value: `${stats?.inventoryHealth}%`, icon: TrendingUp, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' },
   ];
 
@@ -66,7 +66,7 @@ export function LiveStats() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ y: -5 }}
-            className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all group"
+            className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-teal-100 dark:hover:border-teal-900/50 transition-all group"
           >
             <div className={`h-12 w-12 ${item.bg} rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
               <item.icon className={`h-6 w-6 ${item.color}`} />

@@ -45,11 +45,11 @@ export default function ProcurementPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Procurement Hub</h1>
-            <Badge className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400 border-none font-bold text-[10px] px-2">24 ACTIVE</Badge>
+            <Badge className="bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400 border-none font-bold text-[10px] px-2">24 ACTIVE</Badge>
           </div>
           <p className="text-slate-500 dark:text-slate-400 font-medium text-lg">Manage purchase orders and supplier relationships.</p>
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-100 dark:shadow-none">
+        <Button className="bg-teal-600 hover:bg-teal-700 rounded-xl font-bold shadow-lg shadow-teal-100 dark:shadow-none">
           <Plus className="mr-2 h-4 w-4" /> Create Purchase Order
         </Button>
       </div>
@@ -60,7 +60,7 @@ export default function ProcurementPage() {
           title="Active Orders" 
           value="24" 
           trend="+3 this week" 
-          icon={<ShoppingCart className="h-5 w-5 text-indigo-600" />} 
+          icon={<ShoppingCart className="h-5 w-5 text-teal-600" />} 
         />
         <MetricCard 
           title="Pending Approval" 
@@ -79,7 +79,7 @@ export default function ProcurementPage() {
           title="Avg Lead Time" 
           value="12.4d" 
           trend="-1.2 days improved" 
-          icon={<Clock className="h-5 w-5 text-violet-600" />} 
+          icon={<Clock className="h-5 w-5 text-cyan-600" />} 
         />
       </div>
 
@@ -92,10 +92,10 @@ export default function ProcurementPage() {
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-64 group">
-                <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                 <Input 
                   placeholder="Search POs..." 
-                  className="pl-11 h-12 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus-visible:ring-indigo-600 font-medium"
+                  className="pl-11 h-12 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus-visible:ring-teal-600 font-medium"
                 />
               </div>
               <Button variant="outline" size="sm" className="h-12 rounded-xl font-bold border-slate-200 dark:border-slate-700 px-5">
@@ -127,11 +127,11 @@ export default function ProcurementPage() {
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
-                        <ShoppingCart className="h-4 w-4 text-slate-500 group-hover:text-indigo-600" />
+                      <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl group-hover:bg-teal-50 dark:group-hover:bg-teal-900/30 transition-colors">
+                        <ShoppingCart className="h-4 w-4 text-slate-500 group-hover:text-teal-600" />
                       </div>
                       <div>
-                        <span className="font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">{po.id}</span>
+                        <span className="font-black text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">{po.id}</span>
                         <p className="text-xs font-bold text-slate-400">{po.items} items</p>
                       </div>
                     </div>
@@ -157,7 +157,7 @@ export default function ProcurementPage() {
                         "text-[10px] font-bold rounded-full px-3 py-1",
                         po.status === 'Delivered' && "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 border-none",
                         po.status === 'Shipped' && "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border-none",
-                        po.status === 'Approved' && "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400 border-none",
+                        po.status === 'Approved' && "bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400 border-none",
                         po.status === 'Pending' && "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 border-none"
                       )}
                     >
@@ -175,7 +175,7 @@ export default function ProcurementPage() {
                         <DropdownMenuItem className="rounded-lg font-medium cursor-pointer">View Details</DropdownMenuItem>
                         <DropdownMenuItem className="rounded-lg font-medium cursor-pointer">Edit Order</DropdownMenuItem>
                         <DropdownMenuItem className="rounded-lg font-medium cursor-pointer">Track Shipment</DropdownMenuItem>
-                        <DropdownMenuItem className="rounded-lg text-indigo-600 font-bold cursor-pointer">Download Invoice</DropdownMenuItem>
+                        <DropdownMenuItem className="rounded-lg text-teal-600 font-bold cursor-pointer">Download Invoice</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -191,7 +191,7 @@ export default function ProcurementPage() {
         <Card className="lg:col-span-2 shadow-xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2rem] bg-white dark:bg-slate-900">
           <CardHeader className="px-7 pt-7">
             <CardTitle className="text-lg font-black flex items-center gap-2">
-              <Users className="h-5 w-5 text-indigo-600" />
+              <Users className="h-5 w-5 text-teal-600" />
               Top Suppliers
             </CardTitle>
             <CardDescription className="font-medium">Performance metrics for key vendors.</CardDescription>
@@ -203,9 +203,9 @@ export default function ProcurementPage() {
                 { name: 'Global Parts Corp', score: 94, orders: 32, value: '$840K' },
                 { name: 'EcoPack Ltd', score: 91, orders: 28, value: '$520K' },
               ].map((supplier, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all group cursor-pointer">
+                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-teal-100 dark:hover:border-teal-900/50 transition-all group cursor-pointer">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 transition-colors">
+                    <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/30 group-hover:text-teal-600 transition-colors">
                       {supplier.name.charAt(0)}
                     </div>
                     <div>
@@ -218,7 +218,7 @@ export default function ProcurementPage() {
                       <p className="text-2xl font-black text-emerald-600">{supplier.score}%</p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Score</p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-teal-600 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               ))}
@@ -231,16 +231,16 @@ export default function ProcurementPage() {
             <CardTitle className="text-lg font-black">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="px-7 pb-7 space-y-3">
-            <Button variant="outline" className="w-full justify-start h-14 rounded-xl font-bold border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 group">
-              <Plus className="mr-3 h-5 w-5 text-slate-400 group-hover:text-indigo-600" />
+            <Button variant="outline" className="w-full justify-start h-14 rounded-xl font-bold border-slate-200 dark:border-slate-700 hover:border-teal-200 dark:hover:border-teal-900/50 hover:bg-teal-50 dark:hover:bg-teal-900/20 group">
+              <Plus className="mr-3 h-5 w-5 text-slate-400 group-hover:text-teal-600" />
               New Purchase Order
             </Button>
-            <Button variant="outline" className="w-full justify-start h-14 rounded-xl font-bold border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 group">
-              <Users className="mr-3 h-5 w-5 text-slate-400 group-hover:text-indigo-600" />
+            <Button variant="outline" className="w-full justify-start h-14 rounded-xl font-bold border-slate-200 dark:border-slate-700 hover:border-teal-200 dark:hover:border-teal-900/50 hover:bg-teal-50 dark:hover:bg-teal-900/20 group">
+              <Users className="mr-3 h-5 w-5 text-slate-400 group-hover:text-teal-600" />
               Add Supplier
             </Button>
-            <Button variant="outline" className="w-full justify-start h-14 rounded-xl font-bold border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 group">
-              <FileCheck className="mr-3 h-5 w-5 text-slate-400 group-hover:text-indigo-600" />
+            <Button variant="outline" className="w-full justify-start h-14 rounded-xl font-bold border-slate-200 dark:border-slate-700 hover:border-teal-200 dark:hover:border-teal-900/50 hover:bg-teal-50 dark:hover:bg-teal-900/20 group">
+              <FileCheck className="mr-3 h-5 w-5 text-slate-400 group-hover:text-teal-600" />
               Review Pending
             </Button>
           </CardContent>
@@ -272,7 +272,7 @@ function MetricCard({ title, value, trend, icon, alert }: { title: string, value
         )}>{value}</div>
         <div className={cn(
           "text-xs font-bold",
-          alert ? "text-amber-600" : "text-indigo-600"
+          alert ? "text-amber-600" : "text-teal-600"
         )}>{trend}</div>
       </CardContent>
     </Card>

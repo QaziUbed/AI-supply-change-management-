@@ -20,7 +20,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-indigo-600" />
+            <User className="h-5 w-5 text-teal-600" />
             <CardTitle>Profile Information</CardTitle>
           </div>
           <CardDescription>Update your personal details and avatar.</CardDescription>
@@ -43,7 +43,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-indigo-600" />
+            <Bell className="h-5 w-5 text-teal-600" />
             <CardTitle>Notifications</CardTitle>
           </div>
           <CardDescription>Configure how you receive alerts and updates.</CardDescription>
@@ -78,7 +78,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-indigo-600" />
+            <Shield className="h-5 w-5 text-teal-600" />
             <CardTitle>Security</CardTitle>
           </div>
           <CardDescription>Manage your password and security settings.</CardDescription>
@@ -97,7 +97,7 @@ export default function SettingsPage() {
 
       <div className="flex justify-end gap-4">
         <Button variant="ghost">Cancel</Button>
-        <Button className="bg-indigo-600 hover:bg-indigo-700">Save Changes</Button>
+        <Button className="bg-teal-600 hover:bg-teal-700">Save Changes</Button>
       </div>
     </div>
   );

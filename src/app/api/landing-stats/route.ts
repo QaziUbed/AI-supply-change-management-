@@ -21,9 +21,9 @@ export async function GET() {
       supabase.from('inventory').select('stock_level, reorder_point')
     ]);
 
-    const lowStockItems = inventoryData?.filter(i => i.stock_level <= i.reorder_point).length || 0;
-    const inventoryHealth = inventoryData?.length 
-      ? Math.round(((inventoryData.length - lowStockItems) / inventoryData.length) * 100) 
+    const lowStockItems = inventoryData?.filter((i: any) => i.stock_level <= i.reorder_point).length || 0;
+    const inventoryHealth = inventoryData?.length
+      ? Math.round(((inventoryData.length - lowStockItems) / inventoryData.length) * 100)
       : 0;
 
     return NextResponse.json({

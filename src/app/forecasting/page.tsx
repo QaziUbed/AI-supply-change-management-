@@ -49,7 +49,7 @@ export default function ForecastingPage() {
               <SelectItem value="mem-123">Memory Module</SelectItem>
             </SelectContent>
           </Select>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-100 dark:shadow-none">
+          <Button className="bg-teal-600 hover:bg-teal-700 rounded-xl font-bold shadow-lg shadow-teal-100 dark:shadow-none">
             <Calendar className="mr-2 h-4 w-4" /> Export Report
           </Button>
         </div>
@@ -57,10 +57,10 @@ export default function ForecastingPage() {
 
       {/* KPI Row */}
       <div className="grid gap-6 md:grid-cols-4">
-        <MetricCard title="Forecast Accuracy" value="94.2%" trend="+2.1%" icon={<Target className="h-5 w-5 text-indigo-600" />} />
+        <MetricCard title="Forecast Accuracy" value="94.2%" trend="+2.1%" icon={<Target className="h-5 w-5 text-teal-600" />} />
         <MetricCard title="Total Predicted" value="72,400" trend="Next 6mo" icon={<TrendingUp className="h-5 w-5 text-emerald-600" />} />
         <MetricCard title="Peak Month" value="December" trend="8,500 units" icon={<Sparkles className="h-5 w-5 text-amber-500" />} />
-        <MetricCard title="Model Version" value="v4.2" trend="Transformer" icon={<BrainCircuit className="h-5 w-5 text-violet-600" />} />
+        <MetricCard title="Model Version" value="v4.2" trend="Transformer" icon={<BrainCircuit className="h-5 w-5 text-cyan-600" />} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-7">
@@ -121,7 +121,7 @@ export default function ForecastingPage() {
         </Card>
 
         <div className="lg:col-span-2 space-y-6">
-          <Card className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white border-none shadow-2xl shadow-indigo-200 dark:shadow-none rounded-[2rem] overflow-hidden">
+          <Card className="bg-gradient-to-br from-teal-600 to-cyan-600 text-white border-none shadow-2xl shadow-teal-200 dark:shadow-none rounded-[2rem] overflow-hidden">
             <CardHeader className="pb-3 px-7 pt-7">
               <CardTitle className="text-lg font-black flex items-center gap-2">
                 <BrainCircuit className="h-5 w-5" />
@@ -129,11 +129,11 @@ export default function ForecastingPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="px-7 pb-7">
-              <p className="text-sm text-indigo-100 leading-relaxed mb-5">
+              <p className="text-sm text-teal-100 leading-relaxed mb-5">
                 The predicted <strong className="text-white">25% surge</strong> in December is driven by historical Q4 cycles and APAC market expansion. 
               </p>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 mb-5">
-                <p className="text-xs font-bold text-indigo-200 mb-1 uppercase tracking-widest">Recommendation</p>
+                <p className="text-xs font-bold text-teal-200 mb-1 uppercase tracking-widest">Recommendation</p>
                 <p className="text-sm font-bold">Increase AI Processor safety stock by 15% starting mid-October.</p>
               </div>
               <Button variant="secondary" className="w-full bg-white/15 hover:bg-white/25 text-white border-white/20 rounded-xl font-bold">
@@ -181,7 +181,7 @@ function MetricCard({ title, value, trend, icon }: { title: string, value: strin
           </div>
         </div>
         <div className="text-3xl font-black text-slate-900 dark:text-white mb-1">{value}</div>
-        <div className="text-xs font-bold text-indigo-600">{trend}</div>
+        <div className="text-xs font-bold text-teal-600">{trend}</div>
       </CardContent>
     </Card>
   );

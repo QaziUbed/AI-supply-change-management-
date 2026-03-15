@@ -7,21 +7,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Sparkles, 
-  Send, 
-  Paperclip, 
-  RefreshCcw, 
-  ThumbsUp, 
+import {
+  Sparkles,
+  Send,
+  RefreshCcw,
+  ThumbsUp,
   ThumbsDown,
-  Info,
   AlertTriangle,
   TrendingUp,
-  BrainCircuit,
   Zap,
   ChevronRight,
   MessageSquare,
-  Package
+  Package,
+  Copy,
+  Check,
+  Search
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -32,7 +32,6 @@ interface Message {
   content: string;
   timestamp: Date;
   suggestions?: string[];
-  type?: 'text' | 'insight' | 'alert';
 }
 
 interface Insight {
@@ -47,12 +46,14 @@ const initialMessages: Message[] = [
   {
     id: '1',
     role: 'assistant',
-    content: "Hello! I'm your SCM AI Assistant. I can help you analyze demand trends, optimize inventory, or provide logistics insights. What would you like to know today?",
+    content: "Hey! I'm here to help you with anything supply chain — inventory checks, demand trends, supplier reviews, you name it.\n\nWhat would you like to look into?",
     timestamp: new Date(),
     suggestions: [
-      "What products are at risk of stockout next week?",
-      "Analyze supplier performance for Q3",
-      "Show me demand forecast for Memory Modules"
+      "Check stock levels",
+      "Review supplier performance",
+      "Show demand trends",
+      "Flag any risks",
+      "Give me the overview",
     ]
   }
 ];
@@ -62,13 +63,13 @@ export default function AiAssistantPage() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [insights, setInsights] = useState<Insight[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
-    const scrollContainer = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    if (scrollRef.current) {
+      const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) viewport.scrollTop = viewport.scrollHeight;
     }
   }, [messages, isTyping]);
 
@@ -77,7 +78,7 @@ export default function AiAssistantPage() {
       try {
         const res = await fetch('/api/ai/insights');
         const data = await res.json();
-        setInsights(data);
+        if (Array.isArray(data)) setInsights(data);
       } catch (error) {
         console.error('Failed to fetch insights', error);
       }
@@ -86,7 +87,7 @@ export default function AiAssistantPage() {
   }, []);
 
   const handleSend = async (text: string = input) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -105,122 +106,151 @@ export default function AiAssistantPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: [...messages, userMessage] })
       });
-      
+
       const data = await response.json();
-      
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.content || "I'm sorry, I couldn't process that request.",
+        content: data.content || "Sorry, something went wrong. Mind trying again?",
         timestamp: new Date(),
-        type: 'insight'
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Chat error:', error);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "Couldn't connect right now. Check your connection and try again.",
+        timestamp: new Date(),
+      }]);
     } finally {
       setIsTyping(false);
     }
   };
 
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleReset = () => {
+    setMessages(initialMessages);
+  };
+
+  const renderContent = (text: string) => {
+    return text.split('\n').map((line, i) => (
+      <p key={i} className={i > 0 ? "mt-1.5" : ""}>
+        {line.split(/(\*\*.*?\*\*)/).map((part, j) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
+          }
+          return <span key={j}>{part}</span>;
+        })}
+      </p>
+    ));
+  };
+
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
   return (
     <div className="h-[calc(100vh-112px)] flex flex-col gap-6 -mt-2">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">AI Decision Support</h1>
-            <Badge className="bg-indigo-600/10 text-indigo-600 hover:bg-indigo-600/20 border-none px-2 py-0 text-[10px] font-bold">BETA</Badge>
-          </div>
-          <p className="text-slate-500 font-medium">Natural language interface for deep supply chain reasoning.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Assistant</h1>
+          <p className="text-slate-500 dark:text-slate-400">Ask questions about your supply chain data in plain language.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
-            <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-slate-600">Model: SCM-Core-v4</span>
+          <div className="hidden sm:flex items-center gap-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700">
+            <span className="h-2 w-2 bg-emerald-500 rounded-full" />
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Connected to live data</span>
           </div>
-          <Button variant="outline" size="icon" className="rounded-full bg-white shadow-sm border-slate-100 hover:bg-slate-50">
-            <RefreshCcw className="h-4 w-4 text-slate-500" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg text-sm"
+            onClick={handleReset}
+          >
+            <RefreshCcw className="h-3.5 w-3.5 mr-2" />
+            New chat
           </Button>
         </div>
       </div>
 
       <div className="flex-1 flex gap-6 min-h-0">
-        <Card className="flex-1 flex flex-col min-h-0 border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/80 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="py-5 px-8 border-b border-slate-50 flex flex-row items-center gap-3 bg-white/50">
-            <div className="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-100">
-              <BrainCircuit className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-lg font-black text-slate-900">Neural Workspace</CardTitle>
-              <CardDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Reasoning Session</CardDescription>
-            </div>
-          </CardHeader>
+        {/* Main chat */}
+        <Card className="flex-1 flex flex-col min-h-0 rounded-2xl border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
           <CardContent className="flex-1 flex flex-col p-0 min-h-0 relative">
-            <ScrollArea className="flex-1 p-8" ref={scrollRef}>
-              <div className="space-y-10 pb-32">
+            <ScrollArea className="flex-1 px-6 py-6" ref={scrollRef}>
+              <div className="space-y-6 pb-28 max-w-3xl mx-auto">
                 <AnimatePresence initial={false}>
                   {messages.map((message) => (
-                    <motion.div 
+                    <motion.div
                       key={message.id}
-                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={cn(
-                        "flex gap-4",
+                        "flex gap-3",
                         message.role === 'user' ? "flex-row-reverse" : "flex-row"
                       )}
                     >
-                      <Avatar className="h-12 w-12 shrink-0 shadow-md border-2 border-white mt-1">
-                        {message.role === 'assistant' ? (
-                          <div className="bg-slate-900 h-full w-full flex items-center justify-center">
-                            <Sparkles className="h-6 w-6 text-indigo-400" />
+                      {message.role === 'assistant' && (
+                        <Avatar className="h-8 w-8 shrink-0 mt-1">
+                          <div className="bg-teal-600 h-full w-full flex items-center justify-center rounded-full">
+                            <Sparkles className="h-4 w-4 text-white" />
                           </div>
-                        ) : (
-                          <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=SCM-User`} />
-                        )}
-                        <AvatarFallback className="font-bold">{message.role === 'assistant' ? 'AI' : 'U'}</AvatarFallback>
-                      </Avatar>
+                        </Avatar>
+                      )}
                       <div className={cn(
-                        "flex flex-col gap-3 max-w-[85%] md:max-w-[75%]",
+                        "flex flex-col gap-1.5 max-w-[80%]",
                         message.role === 'user' ? "items-end" : "items-start"
                       )}>
                         <div className={cn(
-                          "p-5 rounded-[2.2rem] text-[15px] leading-relaxed shadow-sm font-medium",
-                          message.role === 'user' 
-                            ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-100" 
-                            : "bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-slate-100/50"
+                          "px-4 py-3 text-[14px] leading-relaxed",
+                          message.role === 'user'
+                            ? "bg-teal-600 text-white rounded-2xl rounded-br-md"
+                            : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl rounded-bl-md border border-slate-100 dark:border-slate-700"
                         )}>
-                          {message.content.split('\n').map((line, i) => (
-                            <p key={i} className={i > 0 ? "mt-3" : ""}>{line}</p>
-                          ))}
+                          {renderContent(message.content)}
                         </div>
-                        
+
+                        {/* Suggestions */}
                         {message.suggestions && (
-                          <div className="flex flex-wrap gap-2.5 mt-2">
+                          <div className="flex flex-wrap gap-2 mt-1">
                             {message.suggestions.map((suggestion, i) => (
-                              <Button 
-                                key={i} 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-[11px] h-9 rounded-full border-slate-100 bg-white hover:bg-indigo-600 hover:text-white hover:border-indigo-600 shadow-sm transition-all font-bold px-5"
+                              <button
+                                key={i}
+                                className="text-xs font-medium px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-teal-300 dark:hover:border-teal-700 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
                                 onClick={() => handleSend(suggestion)}
+                                disabled={isTyping}
                               >
                                 {suggestion}
-                              </Button>
+                              </button>
                             ))}
                           </div>
                         )}
 
-                        {message.role === 'assistant' && !isTyping && (
-                          <div className="flex items-center gap-4 mt-1 px-3">
-                            <button className="text-slate-300 hover:text-indigo-600 transition-colors">
-                              <ThumbsUp className="h-4 w-4" />
+                        {/* Actions */}
+                        {message.role === 'assistant' && message.id !== '1' && (
+                          <div className="flex items-center gap-3 px-1">
+                            <button
+                              className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
+                              onClick={() => handleCopy(message.content, message.id)}
+                            >
+                              {copiedId === message.id ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                             </button>
-                            <button className="text-slate-300 hover:text-red-600 transition-colors">
-                              <ThumbsDown className="h-4 w-4" />
+                            <button className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors">
+                              <ThumbsUp className="h-3.5 w-3.5" />
                             </button>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <button className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors">
+                              <ThumbsDown className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                              {formatTime(message.timestamp)}
                             </span>
                           </div>
                         )}
@@ -228,137 +258,122 @@ export default function AiAssistantPage() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
+
                 {isTyping && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex gap-4"
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex gap-3"
                   >
-                    <Avatar className="h-12 w-12 shrink-0 shadow-md border-2 border-white">
-                      <div className="bg-slate-900 h-full w-full flex items-center justify-center">
-                        <Sparkles className="h-6 w-6 text-indigo-400" />
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <div className="bg-teal-600 h-full w-full flex items-center justify-center rounded-full">
+                        <Sparkles className="h-4 w-4 text-white" />
                       </div>
                     </Avatar>
-                    <div className="bg-white p-5 rounded-[2.2rem] rounded-tl-none border border-slate-100 shadow-sm">
-                      <div className="flex gap-1.5 items-center">
-                        <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce" />
-                        <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-                        <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                    <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-md border border-slate-100 dark:border-slate-700">
+                      <div className="flex gap-1 items-center">
+                        <div className="h-1.5 w-1.5 bg-slate-400 rounded-full animate-bounce" />
+                        <div className="h-1.5 w-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                        <div className="h-1.5 w-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:300ms]" />
                       </div>
                     </div>
                   </motion.div>
                 )}
               </div>
             </ScrollArea>
-            
-            <div className="p-8 bg-gradient-to-t from-white via-white/95 to-transparent absolute bottom-0 left-0 right-0 pt-20">
-              <div className="relative group max-w-4xl mx-auto">
-                <div className="absolute inset-0 bg-indigo-600/5 rounded-[2.5rem] blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                <div className="relative flex items-center bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-2xl p-2 pl-7 focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all">
-                  <Input 
-                    placeholder="Ask about inventory, demand, or global logistics..." 
-                    className="flex-1 bg-transparent border-none focus-visible:ring-0 text-slate-700 font-medium placeholder:text-slate-400 py-7 h-14 text-base"
+
+            {/* Input bar */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white dark:from-slate-900 via-white/95 dark:via-slate-900/95 to-transparent pt-16">
+              <div className="max-w-3xl mx-auto">
+                <div className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-2 pl-5 shadow-sm focus-within:border-teal-400 dark:focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-50 dark:focus-within:ring-teal-900/30 transition-all">
+                  <Input
+                    placeholder="Ask anything about your supply chain..."
+                    className="flex-1 bg-transparent border-none focus-visible:ring-0 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 h-10 text-sm"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    disabled={isTyping}
                   />
-                  <div className="flex items-center gap-2 pr-2">
-                    <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
-                      <Paperclip className="h-5 w-5" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      className="h-14 w-14 rounded-[1.8rem] bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95" 
-                      onClick={() => handleSend()}
-                    >
-                      <Send className="h-6 w-6" />
-                    </Button>
-                  </div>
+                  <Button
+                    size="icon"
+                    className="h-10 w-10 rounded-lg bg-teal-600 hover:bg-teal-700 transition-all active:scale-95 shrink-0"
+                    onClick={() => handleSend()}
+                    disabled={isTyping || !input.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <p className="text-[11px] text-center text-slate-400 mt-5 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                <Info className="h-3.5 w-3.5 text-indigo-400" /> Neural engine uses live warehouse data.
-              </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="w-80 hidden xl:flex flex-col gap-6">
-          <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] bg-white overflow-hidden">
-            <CardHeader className="py-6 px-7 border-b border-slate-50 bg-slate-50/30">
-              <CardTitle className="text-sm font-black flex items-center gap-2 text-slate-900 tracking-tight uppercase">
-                <AlertTriangle className="h-4 w-4 text-amber-500 fill-amber-500/20" />
-                Live Network Alerts
+        {/* Right sidebar */}
+        <div className="w-72 hidden xl:flex flex-col gap-4">
+          {/* Alerts */}
+          <Card className="rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+            <CardHeader className="py-4 px-5 border-b border-slate-100 dark:border-slate-800">
+              <CardTitle className="text-xs font-semibold flex items-center gap-2 text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                Active Alerts
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-7 pb-7 pt-5 space-y-4">
-              <AnimatePresence>
-                {insights.length > 0 ? (
-                  insights.map((insight, idx) => (
-                    <motion.div 
-                      key={insight.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className={cn(
-                        "p-4 rounded-[1.5rem] border transition-all hover:scale-[1.02] cursor-default",
-                        insight.type === 'risk' 
-                          ? "bg-red-50 border-red-100/50" 
-                          : "bg-indigo-50 border-indigo-100/50"
-                      )}
-                    >
-                      <h4 className={cn(
-                        "text-xs font-black mb-1.5 flex items-center gap-2",
-                        insight.type === 'risk' ? "text-red-700" : "text-indigo-700"
-                      )}>
-                        {insight.type === 'risk' ? <AlertTriangle className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
-                        {insight.title}
-                      </h4>
-                      <p className={cn(
-                        "text-[11px] font-medium leading-tight",
-                        insight.type === 'risk' ? "text-red-600/80" : "text-indigo-600/80"
-                      )}>{insight.content}</p>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="py-8 text-center">
-                    <div className="h-2 w-1/2 bg-slate-50 rounded mx-auto mb-2 animate-pulse" />
-                    <div className="h-2 w-1/3 bg-slate-50 rounded mx-auto animate-pulse" />
-                  </div>
-                )}
-              </AnimatePresence>
+            <CardContent className="p-4 space-y-3">
+              {insights.length > 0 ? (
+                insights.map((insight) => (
+                  <button
+                    key={insight.id}
+                    className={cn(
+                      "w-full text-left p-3 rounded-xl border transition-colors",
+                      insight.type === 'risk'
+                        ? "bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30 hover:border-red-200 dark:hover:border-red-800"
+                        : "bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
+                    )}
+                    onClick={() => handleSend(`Tell me about: ${insight.title}`)}
+                  >
+                    <p className={cn(
+                      "text-xs font-semibold mb-1",
+                      insight.type === 'risk' ? "text-red-700 dark:text-red-400" : "text-slate-700 dark:text-slate-300"
+                    )}>
+                      {insight.title}
+                    </p>
+                    <p className={cn(
+                      "text-[11px] leading-snug",
+                      insight.type === 'risk' ? "text-red-600/70 dark:text-red-400/70" : "text-slate-500 dark:text-slate-400"
+                    )}>{insight.content}</p>
+                  </button>
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">No active alerts</p>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="flex-1 border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] bg-white overflow-hidden">
-            <CardHeader className="py-6 px-7 border-b border-slate-50 bg-slate-50/30">
-              <CardTitle className="text-sm font-black flex items-center gap-2 text-slate-900 tracking-tight uppercase">
-                <TrendingUp className="h-4 w-4 text-indigo-600" />
-                System Pulse
+          {/* Try asking */}
+          <Card className="flex-1 rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+            <CardHeader className="py-4 px-5 border-b border-slate-100 dark:border-slate-800">
+              <CardTitle className="text-xs font-semibold flex items-center gap-2 text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <Search className="h-3.5 w-3.5" />
+                Try asking
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-7 pb-7 pt-5 overflow-y-auto">
-              <div className="space-y-7">
-                {[
-                  { time: '10:42 AM', event: 'Inventory Sync', detail: 'Central Hub updated', icon: Package },
-                  { time: '09:15 AM', event: 'Neural Forecast', detail: 'Demand prediction updated', icon: BrainCircuit },
-                  { time: 'Yesterday', event: 'Context Update', detail: 'PO #8812 linked to chat', icon: MessageSquare }
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4 relative pb-2 group">
-                    <div className="flex-shrink-0 h-11 w-11 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                      <item.icon className="h-5 w-5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-0.5">{item.time}</p>
-                      <p className="text-xs font-black text-slate-900 mb-0.5">{item.event}</p>
-                      <p className="text-[11px] font-medium text-slate-500">{item.detail}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Button variant="ghost" className="w-full mt-8 text-xs font-black text-slate-400 hover:text-indigo-600 group rounded-[1.2rem] py-6 border border-transparent hover:border-indigo-100 hover:bg-indigo-50/30 transition-all">
-                VIEW FULL LOGS <ChevronRight className="ml-1 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+            <CardContent className="p-4 space-y-2">
+              {[
+                { text: "What items are running low?", icon: Package },
+                { text: "Forecast for next quarter", icon: TrendingUp },
+                { text: "Which suppliers are slow?", icon: AlertTriangle },
+                { text: "Recent sales breakdown", icon: MessageSquare },
+              ].map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSend(item.text)}
+                  disabled={isTyping}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors group text-left"
+                >
+                  <item.icon className="h-4 w-4 text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors shrink-0" />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors">{item.text}</span>
+                </button>
+              ))}
             </CardContent>
           </Card>
         </div>

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { validateApiAuth } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,10 @@ const supabase = createClient(
 
 export async function GET() {
   try {
+    // Validate authentication — reject unauthenticated requests
+    const auth = await validateApiAuth();
+    if (!auth.authenticated) return auth.response;
+
     const { data: insights, error } = await supabase
       .from('ai_insights')
       .select('*')

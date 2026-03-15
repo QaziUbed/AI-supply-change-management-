@@ -1,24 +1,55 @@
 import type { NextConfig } from "next";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirnameFix = path.dirname(__filename);
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: __dirnameFix,
+  },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
       },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
     ],
-  },
-  typescript: {
-    ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
-} as NextConfig;
+  // Security headers for production
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
+};
 
 export default nextConfig;
