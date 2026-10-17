@@ -40,7 +40,6 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/lib/store';
 import { clearAuth } from '@/lib/features/authSlice';
-import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -74,7 +73,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { theme, setTheme } = useTheme();
-  const supabase = createClient();
 
   const isGuest = user?.isGuest === true;
   const userRole = user?.role || 'Planner';
@@ -92,7 +90,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       dispatch(clearAuth());
       router.push('/login');
     } else {
-      await supabase.auth.signOut();
+      await fetch('/api/auth/logout', { method: 'POST' });
       dispatch(clearAuth());
       router.push('/login');
     }

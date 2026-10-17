@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Supply Chain Management
 
-## Getting Started
+Next.js supply-chain dashboard with **simple application-level auth** and local/mock operational data.
 
-First, run the development server:
+## Environment variables
+
+Create a `.env.local` file from `.env.example`.
+
+Required for production auth:
+
+- `SIMPLE_AUTH_EMAIL`
+- `SIMPLE_AUTH_PASSWORD`
+- `SIMPLE_AUTH_SESSION_SECRET`
+- `SIMPLE_AUTH_ROLE` (optional, defaults to `Planner`; valid: `Admin`, `Planner`, `Manager`)
+
+Optional:
+
+- `GEMINI_API_KEY` (enables Gemini responses in AI chat)
+
+### Development fallback
+
+If `SIMPLE_AUTH_EMAIL` and `SIMPLE_AUTH_PASSWORD` are not set and `NODE_ENV !== production`, login falls back to:
+
+- email: `admin@example.com`
+- password: `dev-password`
+
+Use this for local development only.
+
+## Install and run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Authentication behavior
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `POST /api/auth/login` validates credentials server-side and sets an HTTP-only session cookie.
+- `GET /api/auth/session` returns current authenticated user for client hydration.
+- `POST /api/auth/logout` clears the cookie.
+- Middleware protects app routes and private API routes; unauthenticated browser requests redirect to `/login`, API requests return `401`.
+- Demo login remains available in the UI and is clearly marked as demo mode.
 
-## Learn More
+## Data behavior (no Supabase required)
 
-To learn more about Next.js, take a look at the following resources:
+Dashboard, inventory, landing stats, and AI context use local mock data from `src/lib/mock-data.ts`, so the app builds and runs without a database URL or Supabase keys.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Gemini behavior when key is missing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If `GEMINI_API_KEY` is not configured, AI chat still works using local fallback analysis and returns a clear message indicating Gemini is not configured.
 
-## Deploy on Vercel
+## Build and lint
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run lint
+npm run build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy
+
+Deploy as a standard Next.js app (Vercel, Docker, etc.) with the simple-auth environment variables above. No Supabase URL/key is required.

@@ -35,70 +35,51 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/utils/supabase/client';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { getDashboardDemandData, getDashboardInsights, getDashboardInventoryData } from '@/lib/mock-data';
+
+interface DemandPoint {
+  name: string;
+  actual: number;
+  forecast: number;
+}
+
+interface InventoryPoint {
+  name: string;
+  stock: number;
+  min: number;
+  color: string;
+}
+
+interface InsightPoint {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  level: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
 
 export default function DashboardPage() {
-  const [demandData, setDemandData] = useState<any[]>([]);
-  const [inventoryData, setInventoryData] = useState<any[]>([]);
-  const [insights, setInsights] = useState<any[]>([]);
+  const [demandData, setDemandData] = useState<DemandPoint[]>([]);
+  const [inventoryData, setInventoryData] = useState<InventoryPoint[]>([]);
+  const [insights, setInsights] = useState<InsightPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: sales } = await supabase
-          .from('sales_history')
-          .select('date, quantity_sold')
-          .order('date', { ascending: true })
-          .limit(7);
-
-        const { data: forecasts } = await supabase
-          .from('demand_forecasts')
-          .select('forecast_date, predicted_quantity')
-          .order('forecast_date', { ascending: true })
-          .limit(7);
-
-        const { data: inv } = await supabase
-          .from('inventory')
-          .select('quantity_on_hand, reorder_point, products(name)')
-          .limit(5);
-
-        const { data: aiIns } = await supabase
-          .from('ai_insights')
-          .select('*')
-          .limit(3);
-
-        if (sales) {
-          setDemandData(sales.map((s: any) => ({
-            name: new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' }),
-            actual: s.quantity_sold,
-            forecast: forecasts?.find((f: any) => f.forecast_date === s.date)?.predicted_quantity || s.quantity_sold + 5
-          })));
-        }
-
-        if (inv) {
-          setInventoryData(inv.map((i: any) => ({
-            name: (i.products as any)?.name || 'Unknown',
-            stock: i.quantity_on_hand,
-            min: i.reorder_point,
-            color: i.quantity_on_hand < i.reorder_point ? '#ef4444' : '#6366f1'
-          })));
-        }
-
-        if (aiIns) {
-          setInsights(aiIns.map((ins: any) => ({
-            id: ins.id,
-            title: ins.category + ': ' + ins.insight_text.split('.')[0],
-            description: ins.insight_text,
-            type: ins.category,
-            level: ins.severity,
-            icon: ins.category === 'Inventory' ? AlertTriangle : ins.category === 'Demand' ? Sparkles : TrendingUp,
-            color: ins.severity === 'High' ? 'text-red-600 bg-red-50' : 'text-teal-600 bg-teal-50'
-          })));
-        }
+        setDemandData(getDashboardDemandData());
+        setInventoryData(getDashboardInventoryData());
+        setInsights(
+          getDashboardInsights().map((ins) => ({
+            ...ins,
+            icon: ins.type === 'Inventory' ? AlertTriangle : ins.type === 'Demand' ? Sparkles : TrendingUp,
+            color: ins.level === 'High' ? 'text-red-600 bg-red-50' : 'text-teal-600 bg-teal-50',
+          }))
+        );
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -331,7 +312,16 @@ export default function DashboardPage() {
   );
 }
 
-function KPICard({ title, value, trend, trendType, icon, description }: any) {
+interface KPICardProps {
+  title: string;
+  value: string;
+  trend: string;
+  trendType: 'up' | 'down' | 'neutral';
+  icon: React.ReactNode;
+  description: string;
+}
+
+function KPICard({ title, value, trend, trendType, icon, description }: KPICardProps) {
   return (
     <Card className="shadow-xl shadow-slate-200/50 dark:shadow-none border-slate-100 dark:border-slate-800 rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900 transition-all hover:-translate-y-1 hover:shadow-teal-100 dark:hover:border-teal-900/50 group">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">

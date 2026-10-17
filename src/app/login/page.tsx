@@ -1,20 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Loader2, Eye, EyeOff, Check, X, Mail } from 'lucide-react';
+import { Sparkles, Loader2, Eye, EyeOff, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDispatch } from 'react-redux';
 import { setAuth } from '@/lib/features/authSlice';
 import Link from 'next/link';
 
-// Password strength rules
 const PASSWORD_RULES = [
   { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
   { label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
@@ -25,7 +23,7 @@ const PASSWORD_RULES = [
 
 function PasswordStrength({ password }: { password: string }) {
   if (!password) return null;
-  const passed = PASSWORD_RULES.filter(r => r.test(password)).length;
+  const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
   const strength = passed <= 2 ? 'Weak' : passed <= 4 ? 'Medium' : 'Strong';
   const color = passed <= 2 ? 'bg-red-500' : passed <= 4 ? 'bg-amber-500' : 'bg-green-500';
 
@@ -70,10 +68,10 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
-  const supabase = createClient();
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,30 +79,38 @@ export default function LoginPage() {
       toast.error('Please fill in all fields');
       return;
     }
+
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    } else {
-      toast.success('Signed in successfully');
-      // Fetch profile to get role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Unable to sign in');
+        return;
+      }
 
       dispatch(setAuth({
-        session: data.session,
-        user: profile || {
-          id: data.user.id,
-          email: data.user.email,
-          full_name: data.user.user_metadata?.full_name || null,
-          role: 'Planner' as const,
-        },
+        session: { authenticated: true },
+        user: data.user,
       }));
-      router.push('/dashboard');
+
+      if (data.usingDevFallback) {
+        toast.info('Using development fallback credentials. Configure SIMPLE_AUTH_* for real access.');
+      }
+
+      toast.success('Signed in successfully');
+      router.push(redirectTo);
+    } catch {
+      toast.error('Unable to sign in right now. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -115,33 +121,13 @@ export default function LoginPage() {
       return;
     }
 
-    // Validate password strength — all rules must pass
-    const allPassed = PASSWORD_RULES.every(r => r.test(password));
+    const allPassed = PASSWORD_RULES.every((r) => r.test(password));
     if (!allPassed) {
       toast.error('Please meet all password requirements before signing up');
       return;
     }
 
-    setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    } else {
-      setEmailSent(true);
-      setLoading(false);
-      toast.success('Check your email to verify your account!');
-    }
+    toast.info('Sign-up is disabled in simple-auth mode. Ask your admin for login credentials.');
   };
 
   const handleGuestLogin = (role: 'Planner' | 'Manager') => {
@@ -151,43 +137,14 @@ export default function LoginPage() {
       user: {
         id: 'guest',
         full_name: roleLabels[role],
-        role: role,
+        role,
         email: 'demo@scm-platform.com',
         isGuest: true,
-      }
+      },
     }));
     toast.success(`Signed in as ${roleLabels[role]} (demo mode)`);
     router.push('/dashboard');
   };
-
-  // Email verification success screen
-  if (emailSent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
-        <Card className="w-full max-w-md shadow-xl border-none">
-          <CardContent className="pt-8 text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/30 mx-auto">
-              <Mail className="h-8 w-8 text-teal-600" />
-            </div>
-            <h2 className="text-2xl font-bold tracking-tight">Check your email</h2>
-            <p className="text-slate-500 text-sm">
-              We&apos;ve sent a verification link to <strong className="text-slate-700 dark:text-slate-300">{email}</strong>.
-              Click the link to activate your account.
-            </p>
-            <div className="pt-4 space-y-2">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setEmailSent(false)}
-              >
-                Back to login
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 relative">
@@ -213,7 +170,6 @@ export default function LoginPage() {
               <TabsTrigger value="guest">Demo</TabsTrigger>
             </TabsList>
 
-            {/* Login Tab */}
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -256,7 +212,6 @@ export default function LoginPage() {
               </form>
             </TabsContent>
 
-            {/* Sign Up Tab */}
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
@@ -304,22 +259,21 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  <PasswordStrength password={password} />
+                  <PasswordStrength {...{ password }} />
                 </div>
                 <Button
                   className="w-full bg-teal-600 hover:bg-teal-700"
                   type="submit"
-                  disabled={loading || !PASSWORD_RULES.every(r => r.test(password))}
+                  disabled={loading || !PASSWORD_RULES.every((r) => r.test(password))}
                 >
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
                 </Button>
                 <p className="text-xs text-slate-400 text-center">
-                  You&apos;ll receive a verification email to activate your account.
+                  Account creation is managed by administrators in simple-auth mode.
                 </p>
               </form>
             </TabsContent>
 
-            {/* Guest/Demo Tab */}
             <TabsContent value="guest">
               <div className="grid gap-3">
                 <p className="text-sm text-slate-500 mb-2">
@@ -335,7 +289,7 @@ export default function LoginPage() {
                 </Button>
                 <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
                   <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                    ⚠️ Admin access requires a real account. Demo users cannot access Settings or Procurement.
+                    ⚠️ Admin access requires a configured account. Demo users cannot access Settings or Procurement.
                   </p>
                 </div>
               </div>

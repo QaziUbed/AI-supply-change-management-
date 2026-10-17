@@ -5,8 +5,8 @@
 - [ ] Create migration plan
 
 ## In Progress
-- [ ] Update package.json: remove @supabase/supabase-js, add mysql2
-- [ ] Rename src/lib/supabase.ts to src/lib/mysql.ts and set up MySQL connection
+- [ ] Update package.json for selected backend dependencies
+- [ ] Implement backend connection module for selected database
 - [ ] Update .env with MySQL credentials
 - [ ] Update src/components/providers/AuthProvider.tsx for MySQL auth
 - [ ] Update src/components/layout/Shell.tsx for sign out

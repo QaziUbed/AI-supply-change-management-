@@ -1,79 +1,52 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setAuth, setLoading, clearAuth } from '@/lib/features/authSlice';
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { setAuth, clearAuth } from '@/lib/features/authSlice';
 
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
-  const supabaseRef = useRef(createClient());
 
   useEffect(() => {
-    const supabase = supabaseRef.current;
+    let mounted = true;
 
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            dispatch(setAuth({
-              session,
-              user: profile || {
-                id: session.user.id,
-                email: session.user.email,
-                full_name: session.user.user_metadata?.full_name || null,
-                role: 'Planner' as const,
-              },
-            }));
-          });
-      } else {
-        dispatch(setLoading(false));
-      }
-    });
+    async function hydrateSession() {
+      try {
+        const response = await fetch('/api/auth/session', { cache: 'no-store' });
+        if (!mounted) return;
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        if (session) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          dispatch(setAuth({
-            session,
-            user: profile || {
-              id: session.user.id,
-              email: session.user.email,
-              full_name: session.user.user_metadata?.full_name || null,
-              role: 'Planner' as const,
-            },
-          }));
-        } else {
+        if (!response.ok) {
           dispatch(clearAuth());
+          return;
         }
+
+        const data = await response.json();
+        if (data?.authenticated && data?.user) {
+          dispatch(
+            setAuth({
+              session: { authenticated: true },
+              user: data.user,
+            })
+          );
+          return;
+        }
+
+        dispatch(clearAuth());
+      } catch {
+        if (mounted) dispatch(clearAuth());
       }
-    );
+    }
+
+    hydrateSession();
 
     return () => {
-      subscription.unsubscribe();
+      mounted = false;
     };
   }, [dispatch]);
 
-  return (
-    <AuthContext.Provider value={{}}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
