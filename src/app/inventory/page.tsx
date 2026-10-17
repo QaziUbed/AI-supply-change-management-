@@ -28,47 +28,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { createClient } from '@/utils/supabase/client';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { getInventoryViewData } from '@/lib/mock-data';
+
+interface InventoryRow {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  stock: number;
+  warehouse: string;
+  min: number;
+  status: 'Critical' | 'Low Stock' | 'Healthy';
+}
 
 export default function InventoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [inventory, setInventory] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<InventoryRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchInventory() {
       try {
-        const { data, error } = await supabase
-          .from('inventory')
-          .select(`
-            id,
-            quantity_on_hand,
-            reorder_point,
-            products (
-              name,
-              sku,
-              categories (name)
-            ),
-            warehouses (name)
-          `);
-
-        if (error) throw error;
-        if (data) {
-          setInventory(data.map((item: any) => ({
-            id: item.id,
-            name: (item.products as any).name,
-            sku: (item.products as any).sku,
-            category: (item.products as any).categories?.name || 'Uncategorized',
-            stock: item.quantity_on_hand,
-            warehouse: (item.warehouses as any).name,
-            min: item.reorder_point,
-            status: item.quantity_on_hand <= item.reorder_point / 2 ? 'Critical' :
-              item.quantity_on_hand <= item.reorder_point ? 'Low Stock' : 'Healthy'
-          })));
-        }
+        setInventory(getInventoryViewData());
       } catch (err) {
         console.error('Error fetching inventory:', err);
       } finally {

@@ -1,28 +1,26 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/api-auth';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { mockAiInsights } from '@/lib/mock-data';
 
 export async function GET() {
   try {
-    // Validate authentication — reject unauthenticated requests
     const auth = await validateApiAuth();
     if (!auth.authenticated) return auth.response;
 
-    const { data: insights, error } = await supabase
-      .from('ai_insights')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (error) throw error;
+    const insights = mockAiInsights
+      .slice()
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, 5)
+      .map((insight) => ({
+        id: insight.id,
+        title: `${insight.category} Alert`,
+        content: insight.insight_text,
+        type: insight.category.toLowerCase(),
+        created_at: insight.created_at,
+      }));
 
     return NextResponse.json(insights);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch insights' }, { status: 500 });
   }
 }
